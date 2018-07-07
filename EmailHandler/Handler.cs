@@ -19,14 +19,15 @@ namespace EmailHandler
         [FunctionName("EmailHandler")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, null, Route = "{*url}")]HttpRequestMessage req, TraceWriter log, ExecutionContext context)
         {
-            if (req.RequestUri.Segments.Length != 5)
+            if (req.RequestUri.Segments.Length != 4)
             {
-                return new HttpResponseMessage(HttpStatusCode.BadGateway);
+                //return new HttpResponseMessage(HttpStatusCode.BadGateway);
+                return null;
             }
 
-            var email = $"{req.RequestUri.Segments[2].Replace("/", "")}" +
-                                   $"@{req.RequestUri.Segments[3].Replace("/", "")}" +
-                                   $".{req.RequestUri.Segments[4].Replace("/", "")}";
+            var email = $"{req.RequestUri.Segments[1].Replace("/", "")}" +
+                                   $"@{req.RequestUri.Segments[2].Replace("/", "")}" +
+                                   $".{req.RequestUri.Segments[3].Replace("/", "")}";
 
             var formData = req.GetQueryNameValuePairs();
             const string margin = "<span style='padding-bottom: 5px;'";
