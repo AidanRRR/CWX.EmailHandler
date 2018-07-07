@@ -31,7 +31,7 @@ namespace EmailHandler
 
             var formData = req.GetQueryNameValuePairs();
             const string margin = "<span style='padding-bottom: 5px;'";
-            string formDataFormatted = String.Join($"{margin}<br />", formData.Select(kv => kv.Key + ": " + "<b>" + kv.Value + "</b>"));
+            string formDataFormatted = String.Join($"<br /><br />", formData.Select(kv => kv.Key + ": " + "<b>" + kv.Value + "</b>"));
 
             var apiKey = Environment.GetEnvironmentVariable("SendGridApiKey");
             var client = new SendGridClient(apiKey);

@@ -3,6 +3,6 @@
   "Values": {
     "AzureWebJobsStorage": "",
     "AzureWebJobsDashboard": "",
-    "SendGridApiKey": "" 
+    "SendGridApiKey": ""
   }
 }
