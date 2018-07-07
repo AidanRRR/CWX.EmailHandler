@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
@@ -20,7 +21,7 @@ namespace EmailHandler
         {
             if (req.RequestUri.Segments.Length != 5)
             {
-                return new HttpResponseMessage();
+                return new HttpResponseMessage(HttpStatusCode.BadGateway);
             }
 
             var email = $"{req.RequestUri.Segments[2].Replace("/", "")}" +
@@ -31,7 +32,7 @@ namespace EmailHandler
             const string margin = "<span style='padding-bottom: 5px;'";
             string formDataFormatted = String.Join($"{margin}<br />", formData.Select(kv => kv.Key + ": " + "<b>" + kv.Value + "</b>"));
 
-            const string apiKey = "";
+            var apiKey = Environment.GetEnvironmentVariable("SendGridApiKey");
             var client = new SendGridClient(apiKey);
 
             var from = new EmailAddress(email);
@@ -43,6 +44,8 @@ namespace EmailHandler
 
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = await client.SendEmailAsync(msg);
+
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 }
