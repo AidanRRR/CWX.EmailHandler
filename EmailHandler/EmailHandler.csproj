@@ -3,7 +3,8 @@
     <TargetFramework>net462</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.2" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.14" />
+    <PackageReference Include="Sendgrid" Version="9.9.0" />
 	  <PackageReference Include="WebApiFunctionHost" Version="0.1.1-CI-20170808-012319" />
   </ItemGroup>
   <ItemGroup>
