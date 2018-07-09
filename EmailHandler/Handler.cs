@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Drawing.Printing;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http.Results;
+using System.Web;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
@@ -21,8 +19,14 @@ namespace EmailHandler
         {
             if (req.RequestUri.Segments.Length != 4)
             {
-                //return new HttpResponseMessage(HttpStatusCode.BadGateway);
                 return null;
+            }
+
+            var ip = GetIp(req);
+
+            if (ip == null)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Forbidden);
             }
 
             var email = $"{req.RequestUri.Segments[1].Replace("/", "")}" +
@@ -48,5 +52,11 @@ namespace EmailHandler
 
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
+
+        public static string GetIp(HttpRequestMessage request)
+        {
+            return request.Properties.ContainsKey("MS_HttpContext") ? ((HttpContext)request.Properties["MS_HttpContext"]).Request.UserHostAddress : null;
+        }
     }
+
 }
