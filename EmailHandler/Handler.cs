@@ -22,6 +22,8 @@ namespace EmailHandler
             var ip = req.GetClientIpString();
             var reqEntity = new RequestEntity(ip);
 
+            log.Info($"Request from ip: {req.GetClientIpString()}");
+
             var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("StorageConnectionString"));
             var tableClient = storageAccount.CreateCloudTableClient();
             var table = tableClient.GetTableReference(Environment.GetEnvironmentVariable("RequestsTableName"));
