@@ -28,9 +28,13 @@ namespace EmailHandler
             var tableClient = storageAccount.CreateCloudTableClient();
             var table = tableClient.GetTableReference(Environment.GetEnvironmentVariable("RequestsTableName"));
 
-            if (!CheckRequestValid(ip, reqEntity, req, table))
+            if (req.RequestUri.Segments.Length != 4)
             {
                 return null;
+            }
+            if (!CheckClientValid(ip, table))
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest);
             }
 
             var email = $"{req.RequestUri.Segments[1].Replace("/", "")}" +
@@ -62,26 +66,6 @@ namespace EmailHandler
             {
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
-        }
-
-        public static bool CheckRequestValid(string ip, RequestEntity reqEntity, HttpRequestMessage req, CloudTable table)
-        {
-            //if (ip == null)
-            //{
-            //    return new HttpResponseMessage(HttpStatusCode.Forbidden);
-            //}
-
-            if (req.RequestUri.Segments.Length != 4)
-            {
-                return false;
-            }
-
-            if (!CheckClientValid(ip, table))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         public static async void InsertRequest(RequestEntity req, CloudTable table)
