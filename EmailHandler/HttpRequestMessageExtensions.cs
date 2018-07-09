@@ -13,11 +13,6 @@ namespace EmailHandler
 
         public static string GetClientIpString(this HttpRequestMessage request)
         {
-            if (System.Web.HttpContext.Current != null)
-            {
-                return System.Web.HttpContext.Current.Request.UserHostAddress;
-            }
-
             //Web-hosting
             if (request.Properties.ContainsKey(HttpContext))
             {
@@ -29,26 +24,30 @@ namespace EmailHandler
             }
 
             //Self-hosting
-            if (request.Properties.ContainsKey(RemoteEndpointMessage))
-            {
-                dynamic remoteEndpoint = request.Properties[RemoteEndpointMessage];
-                if (remoteEndpoint != null)
-                {
-                    return remoteEndpoint.Address;
-                }
-            }
+            //if (request.Properties.ContainsKey(RemoteEndpointMessage))
+            //{
+            //    dynamic remoteEndpoint = request.Properties[RemoteEndpointMessage];
+            //    if (remoteEndpoint != null)
+            //    {
+            //        return remoteEndpoint.Address;
+            //    }
+            //}
 
             //Owin-hosting
-            if (request.Properties.ContainsKey(OwinContext))
-            {
-                dynamic ctx = request.Properties[OwinContext];
-                if (ctx != null)
-                {
-                    return ctx.Request.RemoteIpAddress;
-                }
-            }
+            //if (request.Properties.ContainsKey(OwinContext))
+            //{
+            //    dynamic ctx = request.Properties[OwinContext];
+            //    if (ctx != null)
+            //    {
+            //        return ctx.Request.RemoteIpAddress;
+            //    }
+            //}
 
-            // Always return all zeroes for any failure
+            //if (System.Web.HttpContext.Current != null)
+            //{
+            //    return System.Web.HttpContext.Current.Request.UserHostAddress;
+            //}
+
             return "0.0.0.0";
         }
 

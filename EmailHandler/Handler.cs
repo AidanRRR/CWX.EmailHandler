@@ -91,7 +91,7 @@ namespace EmailHandler
                 }
             }
 
-            if (requestCount > Int32.Parse(Environment.GetEnvironmentVariable("MaxMailsFromIpPerHour") ?? throw new InvalidOperationException()))
+            if (requestCount >= Int32.Parse(Environment.GetEnvironmentVariable("MaxMailsFromIpPerHour") ?? throw new InvalidOperationException()))
             {
                 return false;
             }
