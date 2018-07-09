@@ -7,6 +7,8 @@ using System.Web;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -17,16 +19,12 @@ namespace EmailHandler
         [FunctionName("EmailHandler")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, null, Route = "{*url}")]HttpRequestMessage req, TraceWriter log, ExecutionContext context)
         {
-            if (req.RequestUri.Segments.Length != 4)
+            var reqEntity = new RequestEntity(GetIp(req), DateTime.UtcNow);
+            var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("StorageConnectionString"));
+
+            if (!CheckRequestValid(reqEntity, req, storageAccount))
             {
                 return null;
-            }
-
-            var ip = GetIp(req);
-
-            if (ip == null)
-            {
-                return new HttpResponseMessage(HttpStatusCode.Forbidden);
             }
 
             var email = $"{req.RequestUri.Segments[1].Replace("/", "")}" +
@@ -34,8 +32,7 @@ namespace EmailHandler
                                    $".{req.RequestUri.Segments[3].Replace("/", "")}";
 
             var formData = req.GetQueryNameValuePairs();
-            const string margin = "<span style='padding-bottom: 5px;'";
-            string formDataFormatted = String.Join($"<br /><br />", formData.Select(kv => kv.Key + ": " + "<b>" + kv.Value + "</b>"));
+            var formDataFormatted = string.Join($"<br /><br />", formData.Select(kv => kv.Key + ": " + "<b>" + kv.Value + "</b>"));
 
             var apiKey = Environment.GetEnvironmentVariable("SendGridApiKey");
             var client = new SendGridClient(apiKey);
@@ -50,12 +47,58 @@ namespace EmailHandler
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = await client.SendEmailAsync(msg);
 
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            if (response.StatusCode == HttpStatusCode.Accepted)
+            {
+                InsertRequest(reqEntity, storageAccount);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+            else
+            {
+                return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public static bool CheckRequestValid(RequestEntity reqEntity, HttpRequestMessage req, CloudStorageAccount storageAccount)
+        {
+            //if (ip == null)
+            //{
+            //    return new HttpResponseMessage(HttpStatusCode.Forbidden);
+            //}
+
+            if (req.RequestUri.Segments.Length != 4)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static async void InsertRequest(RequestEntity req, CloudStorageAccount storageAccount)
+        {
+            var tableClient = storageAccount.CreateCloudTableClient();
+            var table = tableClient.GetTableReference("Requests");
+
+            await table.CreateIfNotExistsAsync();
+
+            var insertOperation = TableOperation.Insert(req);
+
+            await table.ExecuteAsync(insertOperation);
+        }
+
+        public static bool CheckClientValid()
+        {
+
+            return true;
         }
 
         public static string GetIp(HttpRequestMessage request)
         {
-            return request.Properties.ContainsKey("MS_HttpContext") ? ((HttpContext)request.Properties["MS_HttpContext"]).Request.UserHostAddress : null;
+            if (request.Properties.ContainsKey("MS_HttpContext"))
+            {
+                return ((HttpContext) request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+            }
+
+            return null;
         }
     }
 

@@ -1,6 +1,0 @@
-﻿namespace EmailHandler
-{
-    class UserEntity
-    {
-    }
-}
