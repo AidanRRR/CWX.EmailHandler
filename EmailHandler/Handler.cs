@@ -19,7 +19,7 @@ namespace EmailHandler
         [FunctionName("EmailHandler")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, null, Route = "{*url}")]HttpRequestMessage req, TraceWriter log, ExecutionContext context)
         {
-            var ip = GetIp(req, log);
+            var ip = req.GetClientIpString();
             var reqEntity = new RequestEntity(ip);
 
             var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("StorageConnectionString"));
@@ -111,17 +111,6 @@ namespace EmailHandler
             }
 
             return true;
-        }
-
-        public static string GetIp(HttpRequestMessage request, TraceWriter log)
-        {
-            if (request.Properties.ContainsKey("MS_HttpContext"))
-            {
-                log.Info(request.Properties["MS_HttpContext"].ToString());
-                // return ((HttpContext) request.Properties["MS_HttpContext"]).Request.UserHostAddress;
-            }
-
-            return "0.0.0.0";
         }
     }
 
