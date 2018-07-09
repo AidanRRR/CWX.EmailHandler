@@ -11,54 +11,50 @@ namespace EmailHandler
         private const string RemoteEndpointMessage = "System.ServiceModel.Channels.RemoteEndpointMessageProperty";
         private const string OwinContext = "MS_OwinContext";
 
-        public static string GetClientIpString(this HttpRequestMessage request, TraceWriter log)
+        public static string GetClientIpString(this HttpRequestMessage request)
         {
             if (System.Web.HttpContext.Current != null)
             {
-                log.Info($"Logging user host address: {System.Web.HttpContext.Current.Request.UserHostAddress}");
                 return System.Web.HttpContext.Current.Request.UserHostAddress;
             }
 
             //Web-hosting
-            if (request.Properties.ContainsKey(HttpContext))
-            {
-                dynamic ctx = request.Properties[HttpContext];
-                if (ctx != null)
-                {
-                    log.Info($"Logging user host address: {ctx.Request.UserHostAddress}");
-                    return ctx.Request.UserHostAddress;
-                }
-            }
+            //if (request.Properties.ContainsKey(HttpContext))
+            //{
+            //    dynamic ctx = request.Properties[HttpContext];
+            //    if (ctx != null)
+            //    {
+            //        return ctx.Request.UserHostAddress;
+            //    }
+            //}
 
             //Self-hosting
-            if (request.Properties.ContainsKey(RemoteEndpointMessage))
-            {
-                dynamic remoteEndpoint = request.Properties[RemoteEndpointMessage];
-                if (remoteEndpoint != null)
-                {
-                    log.Info($"Logging endpoint address: {remoteEndpoint.Address}");
-                    return remoteEndpoint.Address;
-                }
-            }
+            //if (request.Properties.ContainsKey(RemoteEndpointMessage))
+            //{
+            //    dynamic remoteEndpoint = request.Properties[RemoteEndpointMessage];
+            //    if (remoteEndpoint != null)
+            //    {
+            //        return remoteEndpoint.Address;
+            //    }
+            //}
 
             //Owin-hosting
-            if (request.Properties.ContainsKey(OwinContext))
-            {
-                dynamic ctx = request.Properties[OwinContext];
-                if (ctx != null)
-                {
-                    return ctx.Request.RemoteIpAddress;
-                }
-            }
+            //if (request.Properties.ContainsKey(OwinContext))
+            //{
+            //    dynamic ctx = request.Properties[OwinContext];
+            //    if (ctx != null)
+            //    {
+            //        return ctx.Request.RemoteIpAddress;
+            //    }
+            //}
 
             // Always return all zeroes for any failure
-            log.Info($"Logging fallback ip: 0.0.0.0");
             return "0.0.0.0";
         }
 
-        public static IPAddress GetClientIpAddress(this HttpRequestMessage request, TraceWriter log)
+        public static IPAddress GetClientIpAddress(this HttpRequestMessage request)
         {
-            var ipString = request.GetClientIpString(log);
+            var ipString = request.GetClientIpString();
             IPAddress ipAddress = new IPAddress(0);
             if (IPAddress.TryParse(ipString, out ipAddress))
             {
