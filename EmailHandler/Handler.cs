@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Azure.WebJobs;
@@ -19,10 +20,14 @@ namespace EmailHandler
         [FunctionName("EmailHandler")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, null, Route = "{*url}")]HttpRequestMessage req, TraceWriter log, ExecutionContext context)
         {
-            var reqEntity = new RequestEntity(GetIp(req), DateTime.UtcNow);
-            var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("StorageConnectionString"));
+            var ip = GetIp(req);
+            var reqEntity = new RequestEntity(ip);
 
-            if (!CheckRequestValid(reqEntity, req, storageAccount))
+            var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("StorageConnectionString"));
+            var tableClient = storageAccount.CreateCloudTableClient();
+            var table = tableClient.GetTableReference(Environment.GetEnvironmentVariable("RequestsTableName"));
+
+            if (!CheckRequestValid(ip, reqEntity, req, table))
             {
                 return null;
             }
@@ -49,7 +54,7 @@ namespace EmailHandler
 
             if (response.StatusCode == HttpStatusCode.Accepted)
             {
-                InsertRequest(reqEntity, storageAccount);
+                InsertRequest(reqEntity, table);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
             else
@@ -58,7 +63,7 @@ namespace EmailHandler
             }
         }
 
-        public static bool CheckRequestValid(RequestEntity reqEntity, HttpRequestMessage req, CloudStorageAccount storageAccount)
+        public static bool CheckRequestValid(string ip, RequestEntity reqEntity, HttpRequestMessage req, CloudTable table)
         {
             //if (ip == null)
             //{
@@ -70,23 +75,41 @@ namespace EmailHandler
                 return false;
             }
 
+            if (!CheckClientValid(ip, table))
+            {
+                return false;
+            }
+
             return true;
         }
 
-        public static async void InsertRequest(RequestEntity req, CloudStorageAccount storageAccount)
+        public static async void InsertRequest(RequestEntity req, CloudTable table)
         {
-            var tableClient = storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference("Requests");
-
             await table.CreateIfNotExistsAsync();
-
             var insertOperation = TableOperation.Insert(req);
 
             await table.ExecuteAsync(insertOperation);
         }
 
-        public static bool CheckClientValid()
+        public static bool CheckClientValid(string ip, CloudTable table)
         {
+            var query = new TableQuery<RequestEntity>()
+                .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, ip));
+
+            var requestCount = 0;
+            foreach (RequestEntity entity in table.ExecuteQuery(query))
+            {
+                var t = entity.Timestamp.UtcDateTime.Date;
+                if (t.Hour == DateTime.UtcNow.Date.Hour)
+                {
+                    requestCount++;
+                }
+            }
+
+            if (requestCount > Int32.Parse(Environment.GetEnvironmentVariable("MaxMailsFromIpPerHour") ?? throw new InvalidOperationException()))
+            {
+                return false;
+            }
 
             return true;
         }
@@ -98,7 +121,7 @@ namespace EmailHandler
                 return ((HttpContext) request.Properties["MS_HttpContext"]).Request.UserHostAddress;
             }
 
-            return null;
+            return "0.0.0.0";
         }
     }
 

@@ -4,6 +4,9 @@
     "AzureWebJobsStorage": "",
     "AzureWebJobsDashboard": "",
     "SendGridApiKey": "",
-    "StorageConnectionString":  "" 
+    "StorageConnectionString": "",
+    "RequestsTableName": "Requests",
+    "MaxMailsFromIpPerHour": 100,
+    "MaxMailsFromIpPerMinute": 20 
   }
 }

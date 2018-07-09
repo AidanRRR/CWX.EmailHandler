@@ -6,13 +6,12 @@ namespace EmailHandler
 {
     public class RequestEntity : TableEntity
     {
-        public RequestEntity(string ip, DateTime dateTime)
+        public RequestEntity(string ip)
         {
             this.PartitionKey = ip;
-            this.RowKey = dateTime.ToString(CultureInfo.CurrentCulture);
+            this.RowKey = DateTime.UtcNow.ToString("yyyy-MM-ddHH:mm:ss.fff", CultureInfo.InvariantCulture);
         }
 
-        public string Ip { get; set; }
-        public DateTime InsertTimestamp { get; set; }
+        public RequestEntity() {}
     }
 }
