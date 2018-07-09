@@ -7,6 +7,6 @@
     "StorageConnectionString": "",
     "RequestsTableName": "Requests",
     "MaxMailsFromIpPerHour": 100,
-    "MaxMailsFromIpPerMinute": 20 
+    "MaxMailsFromIpPerMinute": 20
   }
 }
