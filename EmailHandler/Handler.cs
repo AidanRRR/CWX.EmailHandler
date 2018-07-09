@@ -19,10 +19,10 @@ namespace EmailHandler
         [FunctionName("EmailHandler")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, null, Route = "{*url}")]HttpRequestMessage req, TraceWriter log, ExecutionContext context)
         {
-            var ip = req.GetClientIpString();
+            var ip = req.GetClientIpString(log);
             var reqEntity = new RequestEntity(ip);
 
-            log.Info($"Request from ip: {req.GetClientIpString()}");
+            // log.Info($"Request from ip: {req.GetClientIpString()}");
 
             var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("StorageConnectionString"));
             var tableClient = storageAccount.CreateCloudTableClient();

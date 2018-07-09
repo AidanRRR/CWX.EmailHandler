@@ -6,7 +6,7 @@
     "SendGridApiKey": "",
     "StorageConnectionString": "",
     "RequestsTableName": "Requests",
-    "MaxMailsFromIpPerHour": 100,
+    "MaxMailsFromIpPerHour": 5,
     "MaxMailsFromIpPerMinute": 20
   }
 }
