@@ -66,7 +66,7 @@ namespace EmailHandler
 
                 var html = $@"<html>
                                 <script>
-                                    alert({responseMessage});
+                                    alert(""{responseMessage}"");
                                     window.history.back();
                                 </script>
                             </html>";
