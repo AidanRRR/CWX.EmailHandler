@@ -5,6 +5,7 @@
     "AzureWebJobsDashboard": "",
     "SendGridApiKey": "",
     "StorageConnectionString": "",
+    "ResponseMessage": "We will reply as soon as possible.",
     "RequestsTableName": "Requests",
     "MaxMailsFromIpPerHour": 50,
     "MaxMailsFromIpPerMinute": 20

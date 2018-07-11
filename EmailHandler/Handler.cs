@@ -62,10 +62,11 @@ namespace EmailHandler
                 InsertRequest(reqEntity, table);
 
                 var httpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+                var responseMessage = Environment.GetEnvironmentVariable("ResponseMessage");
 
                 var html = $@"<html>
                                 <script>
-                                    alert('Form submitted');
+                                    alert({responseMessage});
                                     window.history.back();
                                 </script>
                             </html>";
