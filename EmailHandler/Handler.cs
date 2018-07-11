@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
+using System.Net.Http.Headers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
@@ -60,7 +60,20 @@ namespace EmailHandler
             if (response.StatusCode == HttpStatusCode.Accepted)
             {
                 InsertRequest(reqEntity, table);
-                return new HttpResponseMessage(HttpStatusCode.OK);
+
+                var httpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+
+                var html = $@"<html>
+                                <script>
+                                    alert('Form submitted');
+                                    window.history.back();
+                                </script>
+                            </html>";
+
+                httpResponse.Content = new StringContent(html);
+                httpResponse.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+
+                return httpResponse;
             }
             else
             {
